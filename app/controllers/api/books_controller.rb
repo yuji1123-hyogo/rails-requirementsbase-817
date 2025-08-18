@@ -1,7 +1,8 @@
 class Api::BooksController < ApplicationController
   def index
-    books = Book.page(params[:page]).per(20)
-    render_success("書籍一覧を取得しました", {books: books, pagination: pagination_info(books)})
+    books = Book.book_search_and_filter(search_params)
+    books = books.page(params[:page]).per(20)
+    render_success('書籍一覧を取得しました', { books: books, pagination: pagination_info(books) })
   end
 
   def show
@@ -42,6 +43,17 @@ class Api::BooksController < ApplicationController
   private
 
   def book_params
-    params.require(:book).permit(:title, :author, :isbn, :published_date, :description ,:genre)
+    params.require(:book).permit(:title, :author, :isbn, :published_date, :description, :genre)
+  end
+
+  def search_params
+    params.permit(
+      :search,
+      :genre, # ジャンルフィルタ
+      :from_year,    # 出版年範囲（開始）
+      :to_year,      # 出版年範囲（終了）
+      :sort_key, # ソートキー
+      :order # ソート順序
+    )
   end
 end

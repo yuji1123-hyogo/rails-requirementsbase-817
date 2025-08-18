@@ -1,10 +1,10 @@
-class ApplicationController < ActionController::Base
+class ApplicationController < ActionController::API
   # レスポンス構造の統一
-  def render_success( message, data={}, status=:ok)
+  def render_success(message, data = {}, status = :ok)
     render json: { message: message, data: data }, status: status
   end
 
-  def render_error( message, errors={}, status=:bad_request)
+  def render_error(message, errors = {}, status = :bad_request)
     render json: { message: message, errors: errors }, status: status
   end
 
