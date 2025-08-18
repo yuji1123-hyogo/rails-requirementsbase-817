@@ -29,7 +29,7 @@ class Api::BooksController < ApplicationController
       render_error('書籍の更新に失敗しました', book.errors, :unprocessable_entity)
     end
   rescue ActiveRecord::RecordNotFound
-    render_error('書籍が見つかりません', :not_found)
+    render_error('書籍が見つかりません', {}, :not_found)
   end
 
   def destroy
