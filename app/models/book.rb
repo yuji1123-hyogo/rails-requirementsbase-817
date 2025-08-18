@@ -11,16 +11,21 @@ class Book < ApplicationRecord
     sci_fi: 4
   }
   scope :search_by_keyword, lambda { |keyword|
-    if keyword.blank?
-      all
-    else
-      where('title LIKE :kw OR author LIKE :kw OR description LIKE :kw', kw: "%#{keyword}%")
-    end
+    return all if keyword.blank?
+
+    # SQLインジェクション対策
+    sanitized_keyword = sanitize_sql_like(keyword.strip)
+    where(
+      'title ILIKE ? OR author ILIKE ? OR description ILIKE ?',
+      "%#{sanitized_keyword}%",
+      "%#{sanitized_keyword}%",
+      "%#{sanitized_keyword}%"
+    )
   }
   scope :published_between, lambda { |from_year, to_year|
     scope = all
-    scope = scope.where('published_date >= from_year', from_year) if from_year.present?
-    scope = scope.where('published_date =< to ', to_year) if to_year.present?
+    scope = scope.where('published_date >= ?', from_year) if from_year.present?
+    scope = scope.where('published_date =< ? ', to_year) if to_year.present?
     scope
   }
   scope :filter_by_genre, lambda { |genre|
