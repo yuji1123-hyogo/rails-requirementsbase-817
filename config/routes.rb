@@ -4,6 +4,10 @@ Rails.application.routes.draw do
   
   namespace :api do
     resources :books, only: [:create, :index, :show, :update, :destroy]
+    resources :likes, only: [:create, :index, :destroy]
+    post "register", to: "users#create"
+    post "login", to: "sessions#create"
+    delete "logout", to: "sessions#destroy"
   end
 
 end

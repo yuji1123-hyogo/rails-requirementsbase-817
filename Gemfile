@@ -24,6 +24,7 @@ gem 'jwt'
 
 group :development, :test do
   gem 'debug', platforms: %i[mri mingw x64_mingw]
+  gem 'dotenv-rails'
   gem 'factory_bot_rails'
   gem 'faker'
   gem 'rspec-rails', '~> 6.0'
@@ -46,4 +47,4 @@ group :test do
   gem 'simplecov', require: false
 end
 
-gem "kaminari", "~> 1.2"
+gem 'kaminari', '~> 1.2'
