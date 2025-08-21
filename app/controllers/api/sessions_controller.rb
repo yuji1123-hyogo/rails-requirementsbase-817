@@ -1,8 +1,8 @@
 class Api::SessionsController < ApplicationController
   def create
-    user = user.find_by(email: params[:email]&.downcase)
+    user = User.find_by(email: params[:email]&.downcase)
     if user&.authenticate_user(user.id)
-      token = JWTService.encode(user_id: user.id)
+      token = jwt_encode(user_id: user.id)
       render_success('ログインしました', { user: user_response(user), token: token }, :created)
     else
       render_error('メールアドレスまたはパスワードが正しくありません', user.error, :unauthorized)

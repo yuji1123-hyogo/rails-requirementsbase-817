@@ -10,7 +10,7 @@ class Api::UsersController < ApplicationController
 
   def create
     user = User.new(user_params)
-    token = JWTService.encode(user.id)
+    token = jwt_encode(user.id)
     if user.save
       render_success('ユーザーを登録しました', { user: user_response(user), token: token }, :created)
     else

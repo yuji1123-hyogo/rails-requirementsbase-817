@@ -1,4 +1,6 @@
 class ApplicationController < ActionController::API
+  include JsonWebToken
+
   # レスポンス構造の統一
   def render_success(message, data = {}, status = :ok)
     render json: { message: message, data: data }, status: status

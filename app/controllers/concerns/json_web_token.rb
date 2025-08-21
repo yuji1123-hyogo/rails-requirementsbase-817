@@ -3,18 +3,44 @@ module JsonWebToken
 
   private
 
-  def authenticate_user
-    header = request.headers['Authorization']
-    token = header.split.last if header
-    return render_unauthorized('認証トークンが必要です') unless token
+  def jwt_encode(payload, exp = 24.hours.from_now)
+    payload[:exp] = exp.to_i
+    JWT.encode(payload, Rails.application.credentials[:secret_key_base])
+  end
 
-    decoded = decode(token)
-    current_user = User.find(decoded[:user_id]) if decoded
-    current_user
-  rescue ActiveRecord::RecordNotFound => e
-    render_unauthorized('無効なユーザーです')
+  def jwt_decode(token)
+    decoded = JWT.decode(token, Rails.application.credentials[:secret_key_base])[0]
+    ActiveSupport::HashWithIndifferentAccess.new decoded
   rescue JWT::DecodeError => e
-    render_unauthorized('無効なトークンです')
+    Rails.logger.error "JWT Decode Error: #{e.message}"
+    nil
+  end
+
+  def authenticate_request
+    token = extract_token_from_header
+    return render_unauthorized unless token
+
+    decode_and_find_user(token)
+  rescue ActiveRecord::RecordNotFound => e
+    Rails.logger.error "User not found: #{e.message}"
+    render_unauthorized
+  rescue JWT::DecodeError => e
+    Rails.logger.error "JWT Decode Error: #{e.message}"
+    render_unauthorized
+  end
+
+  def current_user
+    @current_user
+  end
+
+  def extract_token_from_header
+    header = request.headers['Authorization']
+    header&.split&.last
+  end
+
+  def decode_and_find_user(token)
+    @decoded = jwt_decode(token)
+    @current_user = User.find(@decoded[:user_id]) if @decoded
   end
 
   def render_unauthorized

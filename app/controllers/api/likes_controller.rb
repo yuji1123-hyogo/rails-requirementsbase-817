@@ -1,9 +1,14 @@
 class Api::LikesController < ApplicationController
   before_action :authenticate_user
   def index
-    render_success('お気に入り一覧を取得しました', {
-                     likes: like.map { |like| like_response(like) }
-                   }, :oks)
+    likes = current_user.likes.includes(:book).page(params[:page]).per(20)
+    render_success(
+      'お気に入り一覧を取得しました',
+      {
+        likes: likes.map { |like| like_response(like) },
+        pagination: pagination_info(likes)
+      }
+    )
   end
 
   def create
@@ -52,10 +57,10 @@ class Api::LikesController < ApplicationController
   def book_response(book)
     {
       id: book.id,
-      title: like.book.title,
-      author: like.book.author,
-      genre: like.book.genre,
-      published_date: like.book.published_date
+      title: book.title,
+      author: book.author,
+      genre: book.genre,
+      published_date: book.published_date
     }
   end
 end
