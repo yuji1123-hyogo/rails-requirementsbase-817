@@ -16,7 +16,7 @@ module JsonWebToken
     nil
   end
 
-  def authenticate_request
+  def authenticate_user
     token = extract_token_from_header
     return render_unauthorized unless token
 

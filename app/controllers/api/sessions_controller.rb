@@ -1,11 +1,11 @@
 class Api::SessionsController < ApplicationController
   def create
     user = User.find_by(email: params[:email]&.downcase)
-    if user&.authenticate_user(user.id)
-      token = jwt_encode(user_id: user.id)
+    if user&.authenticate(login_params([:password]))
+      token = jwt_encode({ user_id: user.id })
       render_success('ログインしました', { user: user_response(user), token: token }, :created)
     else
-      render_error('メールアドレスまたはパスワードが正しくありません', user.error, :unauthorized)
+      render_error('メールアドレスまたはパスワードが正しくありません', ['メールアドレスまたはパスワードが正しくありません'], :unauthorized)
     end
   end
 

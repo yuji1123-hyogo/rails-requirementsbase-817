@@ -4,17 +4,17 @@ class Api::UsersController < ApplicationController
   def show
     render_success(
       'プロフィールを取得しました',
-      { user: user_response(@current_user) }
+      { user: user_response(current_user) }
     )
   end
 
   def create
     user = User.new(user_params)
-    token = jwt_encode(user.id)
     if user.save
+      token = jwt_encode({ user_id: user.id })
       render_success('ユーザーを登録しました', { user: user_response(user), token: token }, :created)
     else
-      render_error('ユーザー登録に失敗しました', user.error, :unprocessable_entity)
+      render_error('ユーザー登録に失敗しました', user.errors, :unprocessable_entity)
     end
   end
 
