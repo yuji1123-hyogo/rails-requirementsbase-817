@@ -16,8 +16,4 @@ class ApplicationController < ActionController::API
       per_page: collection.limit_value
     }
   end
-
-  def authenticate_user
-    @current_user = JWTService.authenticate_user
-  end
 end
