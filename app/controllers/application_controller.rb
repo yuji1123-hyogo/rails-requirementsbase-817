@@ -18,11 +18,6 @@ class ApplicationController < ActionController::API
   end
 
   def authenticate_user
-    header = request.headers['Authorization']
-    token = header.split.last if header
-    decoded = JWTService.decode(token)
-    @current_user = User.find(decoded[:user_id]) if decoded
-    @current_user
-    render_error('認証に失敗しました', {}, :unauthorized) unless @current_user
+    @current_user = JWTService.authenticate_user
   end
 end
