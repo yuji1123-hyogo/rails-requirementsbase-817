@@ -2,6 +2,7 @@ class Api::UsersController < ApplicationController
   before_action :authenticate_user, only: [:show]
 
   def show
+    puts "☑☑@current_user#{@current_user}"
     render_success(
       'プロフィールを取得しました',
       { user: user_response(current_user) }

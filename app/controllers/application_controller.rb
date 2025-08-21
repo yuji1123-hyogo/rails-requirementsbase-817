@@ -1,5 +1,5 @@
 class ApplicationController < ActionController::API
-  include JsonWebToken
+  include JwtConcern
 
   # レスポンス構造の統一
   def render_success(message, data = {}, status = :ok)

@@ -28,7 +28,7 @@ class Api::LikesController < ApplicationController
   end
 
   def destroy
-    like = current_user.like.find_by!(book_id: params[:book_id])
+    like = current_user.likes.find_by!(book_id: params[:book_id])
     like.destroy!
     head :no_content
   rescue ActiveRecord::RecordNotFound

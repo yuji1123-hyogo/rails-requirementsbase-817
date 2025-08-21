@@ -1,7 +1,7 @@
 class Api::SessionsController < ApplicationController
   def create
     user = User.find_by(email: params[:email]&.downcase)
-    if user&.authenticate(login_params([:password]))
+    if user&.authenticate(params[:password])
       token = jwt_encode({ user_id: user.id })
       render_success('ログインしました', { user: user_response(user), token: token }, :created)
     else
@@ -14,10 +14,6 @@ class Api::SessionsController < ApplicationController
   end
 
   private
-
-  def login_params
-    params.permit(:email, :password)
-  end
 
   def user_response(user)
     {
