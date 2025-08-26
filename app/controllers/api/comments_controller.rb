@@ -1,21 +1,28 @@
 class Api::CommentsController < ApplicationController
-  include CommentRenderable
-
-  before_action :authenticate_user, only: %i[create update destroy]
+  before_action :authenticate_user, only: %i[create update destroy index]
+  before_action :set_book, only: %i[create index]
+  before_action :set_comment, only: %i[update destroy]
+  before_action :ensure_owner, only: %i[update destroy]
 
   def index
     comments = @book.comments.includes(:user)
-                    .sort_by(params[:sort])
+                    .sorted_by(params[:sort])
                     .by_rating(params[:rating])
                     .page(params[:page]).per(20)
+    serialized_comments = ActiveModelSerializers::SerializableResource.new(
+      comments,
+      each_serializer: CommentSerializer
+    ).as_json
+
     book_stats = {
       average_rating: Comment.average_rating_for_book(@book.id),
       total_comments: @book.comments.count
     }
+
     render_success(
       'コメント一覧を取得しました',
       {
-        comments: comments.map { |comment| comment_response(comment) },
+        comments: serialized_comments,
         pagination: pagination_info(comments),
         book_stats: book_stats
       }
@@ -27,7 +34,7 @@ class Api::CommentsController < ApplicationController
     if comment.save
       render_success(
         'コメントを作成しました',
-        { comment: comment_response(comment) },
+        { comment: CommentSerializer.new(comment).as_json },
         :created
       )
     else
@@ -43,7 +50,7 @@ class Api::CommentsController < ApplicationController
     if @comment.update(comment_params)
       render_success(
         'コメントを更新しました',
-        { comment: comment_response(@comment) }
+        { comment: CommentSerializer.new(@comment).as_json }
       )
     else
       render_error(

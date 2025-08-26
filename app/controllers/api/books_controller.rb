@@ -2,12 +2,16 @@ class Api::BooksController < ApplicationController
   def index
     books = Book.book_search_and_filter(search_params)
     books = books.page(params[:page]).per(20)
-    render_success('書籍一覧を取得しました', { books: books, pagination: pagination_info(books) })
+    serialized_books = ActiveModelSerializers::SerializableResource.new(
+      books,
+      each_serializer: BookSerializer
+    )
+    render_success('書籍一覧を取得しました', { books: serialized_books, pagination: pagination_info(books) })
   end
 
   def show
     book = Book.find(params[:id])
-    render_success('書籍を取得しました', { book: book }, :ok)
+    render_success('書籍を取得しました', { book: BookSerializer.new(book) }, :ok)
   rescue ActiveRecord::RecordNotFound
     render_error('書籍の取得に失敗しました', {}, :not_found)
   end
@@ -15,7 +19,7 @@ class Api::BooksController < ApplicationController
   def create
     book = Book.new(book_params)
     if book.save
-      render_success('書籍を登録しました', { book: book }, :created)
+      render_success('書籍を登録しました', { book: BookSerializer.new(book) }, :created)
     else
       render_error('書籍の登録に失敗しました', book.errors, :unprocessable_entity)
     end
@@ -24,7 +28,7 @@ class Api::BooksController < ApplicationController
   def update
     book = Book.find(params[:id])
     if book.update(book_params)
-      render_success('書籍を更新しました', { book: book })
+      render_success('書籍を更新しました', { book: BookSerializer.new(book) })
     else
       render_error('書籍の更新に失敗しました', book.errors, :unprocessable_entity)
     end

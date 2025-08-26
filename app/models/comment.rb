@@ -12,10 +12,10 @@ class Comment < ApplicationRecord
   scope :oldest, -> { order(created_at: :asc) }
   scope :rating_high, -> { order(rating: :desc) }
   scope :rating_low, -> { order(rating: :asc) }
-  scope :by_rating, -> { where(rating: rating) if rating.present? }
+  scope :by_rating, ->(rating) { where(rating: rating) if rating.present? }
 
   def self.average_rating_for_book(book_id)
-    where(book_id: book_id).average(:rating).round(1)
+    where(book_id: book_id).average(:rating).to_f.round(1)
   end
 
   def self.sorted_by(sort_key)
