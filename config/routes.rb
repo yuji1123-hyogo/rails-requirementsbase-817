@@ -3,7 +3,9 @@ Rails.application.routes.draw do
   root "hello#index"
   
   namespace :api do
-    resources :books, only: [:create, :index, :show, :update, :destroy]
+    resources :books, only: [:create, :index, :show, :update, :destroy] do
+      resources :comments, only: [:create, :index, :update, :destroy], shallow: true
+    end
     resources :likes, only: [:create, :index]
     delete 'likes/:book_id', to: 'likes#destroy'
     post "register", to: "users#create"

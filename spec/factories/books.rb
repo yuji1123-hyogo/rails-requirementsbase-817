@@ -5,7 +5,7 @@ FactoryBot.define do
     sequence(:isbn) { |n| "123456789012#{n}" }
     description { 'これは素晴らしい本です' }
     genre { :fiction }
-    published_date { 1.yaer.ago }
+    published_date { 1.year.ago }
 
     trait :non_fiction do
       genre { :non_fiction }
