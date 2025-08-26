@@ -1,6 +1,6 @@
 class Book < ApplicationRecord
-  has_many :users, through: :likes
   has_many :likes, dependent: :destroy
+  has_many :users, through: :likes
   has_many :comments, dependent: :destroy
   has_many :commented_books, through: :comments, source: :user
   validates :title, presence: true, length: { minimum: 1, maximum: 200 }
