@@ -1,11 +1,16 @@
 class Api::LikesController < ApplicationController
   before_action :authenticate_user
   def index
-    likes = current_user.likes.includes(:book).page(params[:page]).per(20)
+    likes = current_user.likes.includes(book: :comments).page(params[:page]).per(20)
+
+    serialized_likes = ActiveModelSerializers::SerializableResource.new(
+      likes,
+      each_serializer: LikeSerializer
+    )
     render_success(
       'お気に入り一覧を取得しました',
       {
-        likes: likes.map { |like| like_response(like) },
+        likes: serialized_likes,
         pagination: pagination_info(likes)
       }
     )
@@ -15,7 +20,7 @@ class Api::LikesController < ApplicationController
     book = Book.find(params[:book_id])
     like = current_user.likes.build(book: book)
     if like.save
-      render_success('書籍をお気に入り登録しました', { like: like_response(like) }, :created)
+      render_success('書籍をお気に入り登録しました', { like: LikeSerializer.new(like) }, :created)
     elsif like.errors[:user_id].any?
       render_error('すでにお気に入り登録済みです', ['この書籍はお気に入り登録されています'], :conflict)
     else
@@ -37,27 +42,5 @@ class Api::LikesController < ApplicationController
       ['指定された書籍はお気に入り登録されていません'],
       :not_found
     )
-  end
-
-  private
-
-  def like_response(like)
-    {
-      id: like.id,
-      user_id: like.user_id,
-      book_id: like.book_id,
-      created_at: like.created_at,
-      book: book_response(like.book)
-    }
-  end
-
-  def book_response(book)
-    {
-      id: book.id,
-      title: book.title,
-      author: book.author,
-      genre: book.genre,
-      published_date: book.published_date
-    }
   end
 end
