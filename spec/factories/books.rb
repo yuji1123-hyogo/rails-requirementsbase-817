@@ -2,7 +2,7 @@ FactoryBot.define do
   factory :book do
     sequence(:title) { |n| "書籍タイトル#{n}" }
     sequence(:author) { |n| "著者#{n}" }
-    sequence(:isbn) { |n| "123456789012#{n}" }
+    sequence(:isbn) { |n| n.to_s.rjust(13, '0') }
     description { 'これは素晴らしい本です' }
     genre { :fiction }
     published_date { 1.year.ago }
