@@ -1,11 +1,26 @@
 class Api::UsersController < ApplicationController
-  before_action :authenticate_user, only: [:show]
+  before_action :authenticate_user, only: [:show, :update]
 
   def show
     render_success(
       'プロフィールを取得しました',
       { user: UserSerializer.new(current_user).as_json }
     )
+  end
+
+  def update
+    if current_user.update(profile_params)
+      render_success(
+        'プロフィールを更新しました',
+        {user: UserSerializer.new(current_user).as_json}
+      )
+    else
+      render_error(
+        'プロフィールの更新に失敗しました',
+        current_user.errors,
+        :unprocessable_entity
+      )
+    end
   end
 
   def create
@@ -22,5 +37,9 @@ class Api::UsersController < ApplicationController
 
   def user_params
     params.require(:user).permit(:name, :email, :password, :password_confirmation)
+  end
+
+  def profile_params
+    params.require(:user).permit(:name, :bio, :avatar)
   end
 end

@@ -388,6 +388,7 @@ DEPENDENCIES
   jwt
   kaminari (~> 1.2)
   listen (~> 3.3)
+  mini_magick
   puma (~> 6.0)
   rails (= 7.1.5.1)
   redis (~> 4.0)

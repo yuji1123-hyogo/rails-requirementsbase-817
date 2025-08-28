@@ -12,6 +12,7 @@ Rails.application.routes.draw do
     post "login", to: "sessions#create"
     delete "logout", to: "sessions#destroy"
     get 'profile', to: 'users#show'
+    put 'profile', to: 'users#update'
   end
 
 end
