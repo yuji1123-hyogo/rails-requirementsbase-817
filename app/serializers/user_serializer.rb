@@ -3,7 +3,5 @@ class UserSerializer < ActiveModel::Serializer
 
   has_many :favorite_books, each_serialize: BookSerializer
 
-  def avatar_url
-    object.avatar_url
-  end
+  delegate :avatar_url, to: :object
 end

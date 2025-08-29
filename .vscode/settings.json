@@ -1,0 +1,12 @@
+
+{
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit"
+  },
+
+  // RuboCop 拡張の設定
+  "ruby.rubocop.useBundler": true,
+  "ruby.rubocop.commandPath": "bundle",
+  "ruby.rubocop.onSave": true
+}

@@ -1,12 +1,13 @@
 source 'https://rubygems.org'
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby '3.3.8'
+ruby '3.3.9'
+gem 'active_model_serializers'
 gem 'bootsnap', require: false
-gem "mini_magick"
 gem 'image_processing', '~> 1.2'
 gem 'importmap-rails'
 gem 'jbuilder'
+gem 'mini_magick'
 gem 'puma', '~> 6.0'
 gem 'rails', '7.1.5.1'
 gem 'redis', '~> 4.0'
@@ -15,7 +16,6 @@ gem 'sqlite3', '~> 1.4'
 gem 'stimulus-rails'
 gem 'tailwindcss-rails'
 gem 'turbo-rails'
-gem 'active_model_serializers'
 # Windows環境用のタイムゾーンデータ
 gem 'tzinfo-data', platforms: %i[mingw mswin x64_mingw jruby]
 # JWT認証用
