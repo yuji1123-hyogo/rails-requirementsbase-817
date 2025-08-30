@@ -3,6 +3,7 @@ class User < ApplicationRecord
   has_many :favorite_books, through: :likes, source: :book
   has_many :comments, dependent: :destroy
   has_many :commented_books, through: :comments, source: :book
+  has_many :notifications, foreign_key: 'recipient_id', dependent: :destroy
   has_one_attached :avatar
 
   has_secure_password
@@ -48,5 +49,9 @@ class User < ApplicationRecord
   rescue StandardError => e
     Rails.logger.error "Avatar URL generation failed: #{e.message}"
     nil
+  end
+
+  def unread_notifications_count
+    notifications.unread.count
   end
 end
