@@ -14,6 +14,16 @@ Rails.application.routes.draw do
     delete "logout", to: "sessions#destroy"
     get 'profile', to: 'users#show'
     put 'profile', to: 'users#update'
-  end
 
+
+    resources :notifications, only: [:index, :show] do
+      collection do
+        patch :mark_all_as_read
+      end
+
+      member do
+        patch :mark_as_read
+      end
+    end
+  end
 end

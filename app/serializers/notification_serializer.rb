@@ -1,6 +1,8 @@
 class NotificationSerializer < ActiveModel::Serializer
   attributes :id, :notification_type, :message, :read, :created_at, :notifiable_info
 
+
+  # 通知で表示するメッセージ以外の情報・通知が発生する原因となったレコード(コメントなど)の情報
   def notifiable_info
     case object.notifiable_type
     when 'Comment'
@@ -18,11 +20,11 @@ class NotificationSerializer < ActiveModel::Serializer
         id: object.notifiable.id
       }
     end
+  end
 
-    private
+  private
 
-    def truncate_content(content)
-      content.length > 50 ? "#{content[0..50]}..." : content
-    end
+  def truncate_content(content)
+    content.length > 50 ? "#{content[0..50]}..." : content
   end
 end

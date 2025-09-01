@@ -1,4 +1,6 @@
 class Comment < ApplicationRecord
+  after_create_commit :enqueue_notification_job
+
   belongs_to :user
   belongs_to :book
 
@@ -29,5 +31,11 @@ class Comment < ApplicationRecord
     else
       recent
     end
+  end
+
+  private
+
+  def enqueue_notification_job
+    CommentNotificationJob.perform_later(id)
   end
 end

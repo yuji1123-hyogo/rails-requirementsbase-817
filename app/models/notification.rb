@@ -13,9 +13,12 @@ class Notification < ApplicationRecord
   }
 
   scope :unread, -> { where(read: false) }
+  scope :by_type, -> (type) {
+    where(notification_type: type)
+  }
   scope :recent, -> { order(created_at: :desc) }
 
-  def self.create_for_author_by_comment_on_book(comment)
+  def self.create_notification_for_author_by_comment_on_book(comment)
     book = comment.book
 
     create!(
@@ -23,11 +26,11 @@ class Notification < ApplicationRecord
       actor: comment.user,
       notifiable: comment,
       notification_type: 'comment_on_book',
-      message: "#{actor.name}さんがあなたの書籍[#{book.name}]にコメントしました"
+      message: "#{comment.user.name}さんがあなたの書籍[#{book.name}]にコメントしました"
     )
   end
 
-  def self.create_for_author_by_like_on_book(like)
+  def self.create_notification_for_author_by_like_on_book(like)
     book = like.book
 
     create!(
@@ -35,7 +38,14 @@ class Notification < ApplicationRecord
       actor: like.user,
       notifiable: book,
       notification_type: 'like_notification',
-      message: "#{like.user}さんがあなたの書籍[#{book}]をお気に入り登録しました"
+      message: "#{like.user.name}さんがあなたの書籍[#{book}]をお気に入り登録しました"
     )
+  end
+
+  def self.filter(params)
+    scope = all
+    scope = scope.unread if params[:unread]
+    scope = scope.by_type(params[:type]) if params[:type]
+    scope
   end
 end
