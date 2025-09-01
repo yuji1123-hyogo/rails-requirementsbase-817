@@ -3,7 +3,7 @@ class Notification < ApplicationRecord
   belongs_to :actor, class_name: 'User'
   belongs_to :notifiable, polymorphic: true
 
-  validates :message, presence: true, length: { maximum: 500}
+  validates :message, presence: true, length: { maximum: 500 }
   validates :notification_type, presence: true
 
   enum notification_type: {
@@ -17,6 +17,12 @@ class Notification < ApplicationRecord
     where(notification_type: type)
   }
   scope :recent, -> { order(created_at: :desc) }
+  scope :apply_filters, -> (params) {
+    scope = all
+    scope = scope.unread if params[:unread]
+    scope = scope.by_type(params[:type]) if params[:type]
+    scope
+  }
 
   def self.create_notification_for_comment(comment)
     book = comment.book
@@ -35,12 +41,5 @@ class Notification < ApplicationRecord
   rescue StandardError => e
     Rails.logger.error "Notification creation failed: #{e.message}"
     raise e
-  end
-
-  def self.filter(params)
-    scope = all
-    scope = scope.unread if params[:unread]
-    scope = scope.by_type(params[:type]) if params[:type]
-    scope
   end
 end

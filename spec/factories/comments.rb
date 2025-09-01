@@ -1,5 +1,7 @@
 FactoryBot.define do
   factory :comment do
+    association :book 
+    association :user
     content { 'とても良い本でした' }
     rating { 5 }
 

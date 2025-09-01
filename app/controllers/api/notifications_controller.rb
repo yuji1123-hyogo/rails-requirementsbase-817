@@ -4,7 +4,7 @@ class Api::NotificationsController < ApplicationController
 
   def index
     notifications = current_user.notifications.includes(:actor, :notifiable)
-                                .filter(params)
+                                .apply_filters(params)
                                 .recent.page(params[:page]).per(20)
     unread_count = current_user.notifications.unread.size
 
