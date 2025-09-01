@@ -37,18 +37,6 @@ class Notification < ApplicationRecord
     raise e
   end
 
-  def self.create_notification_for_author_by_like_on_book(like)
-    book = like.book
-
-    create!(
-      recipient: book.author,
-      actor: like.user,
-      notifiable: book,
-      notification_type: 'like_notification',
-      message: "#{like.user.name}さんがあなたの書籍[#{book}]をお気に入り登録しました"
-    )
-  end
-
   def self.filter(params)
     scope = all
     scope = scope.unread if params[:unread]
