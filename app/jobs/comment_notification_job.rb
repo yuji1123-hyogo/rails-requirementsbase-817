@@ -6,7 +6,7 @@ class CommentNotificationJob < ApplicationJob
   def perform(comment_id)
     comment = Comment.find(comment_id)
 
-    Notification.create_notification_for_author_by_comment_on_book(comment)
+    Notification.create_notification_for_comment(comment)
   rescue StandardError => e
     Rails.logger.error "✖ CommentNotificationJob: 通知の作成に失敗しました"
     raise e

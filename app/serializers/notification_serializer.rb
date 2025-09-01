@@ -2,6 +2,8 @@ class NotificationSerializer < ActiveModel::Serializer
   attributes :id, :notification_type, :message, :read, :created_at, :notifiable_info
 
 
+  belongs_to :actor, serializer: NotificationActorSerializer
+  
   # 通知で表示するメッセージ以外の情報・通知が発生する原因となったレコード(コメントなど)の情報
   def notifiable_info
     case object.notifiable_type

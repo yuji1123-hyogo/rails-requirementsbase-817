@@ -3,7 +3,11 @@ class Api::NotificationsController < ApplicationController
   before_action :set_notification, only: [:show, :mark_as_read]
 
   def index
-    notifications = current_user.notifications.includes(:actor, :notifiable).filter(params).recent.page(params[:page]).per(20)
+    notifications = current_user.notifications.includes(:actor, :notifiable)
+                                .filter(params)
+                                .recent.page(params[:page]).per(20)
+    unread_count = current_user.notifications.unread.size
+
     render_success(
       '通知一覧を取得しました',
       {

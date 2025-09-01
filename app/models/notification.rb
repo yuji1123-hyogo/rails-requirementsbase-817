@@ -18,16 +18,23 @@ class Notification < ApplicationRecord
   }
   scope :recent, -> { order(created_at: :desc) }
 
-  def self.create_notification_for_author_by_comment_on_book(comment)
+  def self.create_notification_for_comment(comment)
     book = comment.book
+    actor = comment.user
 
-    create!(
-      recipient: book.author,
-      actor: comment.user,
-      notifiable: comment,
-      notification_type: 'comment_on_book',
-      message: "#{comment.user.name}さんがあなたの書籍[#{book.name}]にコメントしました"
-    )
+    # お気に入り登録したユーザーに通知
+    book.users.where.not(id: actor.id).find_each do |recipient|
+      create!(
+        recipient: recipient,
+        actor: actor,
+        notifiable: comment,
+        notification_type: 'like_notification',
+        message: "#{actor.name}さんがお気に入りの書籍「#{book.title}」にコメントしました"
+      )
+    end
+  rescue StandardError => e
+    Rails.logger.error "Notification creation failed: #{e.message}"
+    raise e
   end
 
   def self.create_notification_for_author_by_like_on_book(like)
