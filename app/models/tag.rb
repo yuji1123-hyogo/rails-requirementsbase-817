@@ -31,20 +31,20 @@ class Tag < ApplicationRecord
   }.freeze
 
   scope :by_name, -> { order(:name) }
-  scope :popular, -> { joins(:comment).group('tags.id').order('COUNT(comment.id) DESC') }
+  scope :popular, -> { joins(:comments).group('tags.id').order('COUNT(comments.id) DESC') }
   scope :with_usage_count, -> {
-    left_joins(:comment).group('tags.id').select('tags.*, COUNT(comment.id) as usage_count')
+    left_joins(:comments).group('tags.id').select('tags.*, COUNT(comments.id) as usage_count')
   }
   scope :popular_tags_for_book, -> (book){
       joins(:comments)
       .where(comments: { book_id: book.id})
-      .group('tag.id')
-      .order('COUNT(comment.id) DESC')
+      .group('tags.id')
+      .order('COUNT(comments.id) DESC')
       .limit(5)
   }
   scope :search_by_name, -> (name) {
-    return all unless name.present
-    
+    return all unless name.present?
+
     where('name LIKE ?', "%#{name}%")
   } 
 
@@ -55,7 +55,7 @@ class Tag < ApplicationRecord
   end
 
   def usage_count
-    comment.count
+    comments.count
   end
 
   def can_be_deleted?
@@ -64,7 +64,7 @@ class Tag < ApplicationRecord
 
   def self.popular_tags(limit = 10)
     with_usage_count
-      .order('COUNT(comment.id) DESC')
+      .order('COUNT(comments.id) DESC')
       .limit(limit)
   end
 end

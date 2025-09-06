@@ -9,7 +9,7 @@ class Api::TagController < ApplicationController
       'タグ一覧を取得しました',
       {
         tags: ActiveModelSerializers::SerializableResource.new(
-          tag,
+          tags,
           each_serializer: TagSerializer
         ),
         pagination: pagination_info(tags)
