@@ -16,6 +16,9 @@ Rails.application.routes.draw do
     put 'profile', to: 'users#update'
 
 
+
+    resources :tags, only: [:index, :show ] 
+
     resources :notifications, only: [:index, :show] do
       collection do
         patch :mark_all_as_read

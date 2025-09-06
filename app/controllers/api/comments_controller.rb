@@ -8,7 +8,9 @@ class Api::CommentsController < ApplicationController
     comments = @book.comments.includes(:user)
                     .sorted_by(params[:sort])
                     .by_rating(params[:rating])
+                    .filter_by_tag(params[:tag_ids])
                     .page(params[:page]).per(20)
+
     serialized_comments = ActiveModelSerializers::SerializableResource.new(
       comments,
       each_serializer: CommentSerializer
@@ -19,53 +21,85 @@ class Api::CommentsController < ApplicationController
       total_comments: @book.comments.count
     }
 
+    popular_tags = ActiveModelSerializers::SerializableResource.new(
+      Tag.popular_tags_for_book(@book),
+      each_serializer: TagSerializer
+    ).as_json
+
     render_success(
       'コメント一覧を取得しました',
       {
         comments: serialized_comments,
         pagination: pagination_info(comments),
-        book_stats: book_stats
+        book_stats: book_stats,
+        popular_tags: popular_tags
       }
     )
   end
 
   def create
-    comment = @book.comments.build(comment_params.merge(user: current_user))
-    if comment.save
-      render_success(
-        'コメントを作成しました',
-        { comment: CommentSerializer.new(comment).as_json },
-        :created
-      )
-    else
-      render_error(
-        'コメントの投稿に失敗しました',
-        comment.errors,
-        :unprocessable_entity
-      )
+    comment = @book.comments.build(comment_params.except(:tag_names).merge(user: current_user))
+
+    ActiveRecord::Base.transaction do
+      if comment.save
+        if params[:comment][:tag_names].present? && !comment.assign_tags(params[:comment][:tag_names])
+          raise ActiveRecord::Rollback
+        end
+
+        render_success(
+          'コメントを作成しました',
+          { comment: CommentSerializer.new(comment).as_json},
+          :created
+        )
+      else
+        render_error(
+          'コメントの投稿に失敗しました',
+          comment.errors,
+          :unprocessable_entity
+        )
+      end
     end
+
+  rescue ActiveRecord::Rollback
+    render_error(
+      'コメントの投稿に失敗しました(タグ更新エラー)',
+      comment.errors,
+      :unprocessable_entity
+    )
   end
 
   def update
-    if @comment.update(comment_params)
-      render_success(
-        'コメントを更新しました',
-        { comment: CommentSerializer.new(@comment).as_json }
-      )
-    else
-      render_error(
-        'コメントの更新に失敗しました',
-        comment.errors,
-        :unprocessable_entity
-      )
+    ActiveRecord::Base.transaction do
+      if @comment.update(comment_params.except(:tag_names))
+        if params[:comment][:tag_names].present? && !@comment.assign_tags(params[:comment][:tag_names])
+          raise ActiveRecord::Rollback
+        end
+
+        render_success(
+          'コメントを更新しました',
+          { comment: CommentSerializer.new(@comment).as_json }
+        )
+      else
+        render_error(
+          'コメントの更新に失敗しました',
+          @comment.errors,
+          :unprocessable_entity
+        )
+      end
     end
+  rescue ActiveRecord::Rollback
+    render_error(
+      'コメントの更新に失敗しました(タグ更新エラー)',
+      @comment.errors,
+      :unprocessable_entity
+    )
   end
 
   def destroy
     @comment.destroy!
     head :no_content
   rescue ActiveRecord::RecordNotDestroyed
-    render_error('コメントの削除に失敗しました', {}, :unprocessable_entity)
+    render_error('コメントの削除に失敗しました', @comment.errors.full_messages, :unprocessable_entity)
   end
 
   private
@@ -80,7 +114,7 @@ class Api::CommentsController < ApplicationController
     @comment = Comment.find(params[:id])
     @book = @comment.book
   rescue ActiveRecord::RecordNotFound
-    render_error('コメントが見つかりません', ['指定されたコメントは存在しませんん'], :not_found)
+    render_error('コメントが見つかりません', ['指定されたコメントは存在しません'], :not_found)
   end
 
   def ensure_owner
@@ -90,6 +124,6 @@ class Api::CommentsController < ApplicationController
   end
 
   def comment_params
-    params.require(:comment).permit(:content, :rating)
+    params.require(:comment).permit(:content, :rating, tag_names: [])
   end
 end

@@ -37,6 +37,7 @@ class Book < ApplicationRecord
     order("#{sort_key} #{order}")
   }
 
+
   def self.book_search_and_filter(search_params)
     search_by_keyword(search_params[:search])
       .filter_by_genre(search_params[:genre])

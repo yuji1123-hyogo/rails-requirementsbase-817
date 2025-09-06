@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_08_30_123709) do
+ActiveRecord::Schema[7.1].define(version: 2025_09_03_034443) do
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -53,6 +53,16 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_30_123709) do
     t.index ["published_date"], name: "index_books_on_published_date"
   end
 
+  create_table "comment_tags", force: :cascade do |t|
+    t.integer "comment_id", null: false
+    t.integer "tag_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["comment_id", "tag_id"], name: "index_comment_tags_on_comment_id_and_tag_id", unique: true
+    t.index ["comment_id"], name: "index_comment_tags_on_comment_id"
+    t.index ["tag_id"], name: "index_comment_tags_on_tag_id"
+  end
+
   create_table "comments", force: :cascade do |t|
     t.integer "user_id", null: false
     t.integer "book_id", null: false
@@ -93,6 +103,15 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_30_123709) do
     t.index ["recipient_id"], name: "index_notifications_on_recipient_id"
   end
 
+  create_table "tags", force: :cascade do |t|
+    t.string "name", limit: 20, null: false
+    t.string "color", default: "0", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["color"], name: "index_tags_on_color"
+    t.index ["name"], name: "index_tags_on_name", unique: true
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "name", limit: 50, null: false
     t.string "email", null: false
@@ -105,6 +124,8 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_30_123709) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "comment_tags", "comments"
+  add_foreign_key "comment_tags", "tags"
   add_foreign_key "comments", "books"
   add_foreign_key "comments", "users"
   add_foreign_key "likes", "books"
