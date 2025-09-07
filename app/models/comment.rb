@@ -29,20 +29,34 @@ class Comment < ApplicationRecord
 
   # tagの取り付け(置き換え)
   def assign_tags(tag_names)
+    Rails.logger.debug "=== assign_tags 開始 ==="
+    Rails.logger.debug "受け取った tag_names: #{tag_names.inspect}"
+
     return true if tag_names.blank?
+
     tag_names = Array(tag_names).map(&:to_s).uniq
-    
+    Rails.logger.debug "正規化後の tag_names: #{tag_names.inspect}"
+
     tags = tag_names.map do |tag_name|
-      Tag.create_or_find_by(name: tag_name)
+      Rails.logger.debug "Tag.create_or_find_by を実行: #{tag_name}"
+      tag = Tag.find_or_create_by(name: tag_name)
+      Rails.logger.debug "生成または取得した Tag: #{tag.inspect}"
+      tag
     end
 
     self.tags = tags
+    Rails.logger.debug "関連付け後の self.tags: #{self.tags.map(&:attributes).inspect}"
+
     true
   rescue StandardError => e
-    errors.add(:tags, 'の更新に失敗しました')
-    Rails.logger.error "タグの更新に失敗しました"
+    errors.add(:tags, "の更新に失敗しました: #{e.message}")
+    Rails.logger.error "=== assign_tags エラー ==="
+    Rails.logger.error "例外クラス: #{e.class}"
+    Rails.logger.error "メッセージ: #{e.message}"
+    Rails.logger.error "バックトレース: #{e.backtrace.take(10).join("\n")}"
     false
   end
+
 
   def remove_tag(tag_id)
     comment_tags.find_by(tag_id: tag_id)&.destroy

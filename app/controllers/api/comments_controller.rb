@@ -8,7 +8,7 @@ class Api::CommentsController < ApplicationController
     comments = @book.comments.includes(:user)
                     .sorted_by(params[:sort])
                     .by_rating(params[:rating])
-                    .filter_by_tag(params[:tag_ids])
+                    .filter_by_tag(params[:tag_names])
                     .page(params[:page]).per(20)
 
     serialized_comments = ActiveModelSerializers::SerializableResource.new(
@@ -42,31 +42,25 @@ class Api::CommentsController < ApplicationController
 
     ActiveRecord::Base.transaction do
       if comment.save
-        if params[:comment][:tag_names].present? && !comment.assign_tags(params[:comment][:tag_names])
-          raise ActiveRecord::Rollback
+
+        if params[:comment][:tag_names].present?
+          result = comment.assign_tags(params[:comment][:tag_names])
+          unless result
+            return render_error('コメントの投稿に失敗しました(タグ更新エラー)', comment.errors, :unprocessable_entity)
+          end
         end
 
-        render_success(
+        return render_success(
           'コメントを作成しました',
-          { comment: CommentSerializer.new(comment).as_json},
+          { comment: CommentSerializer.new(comment).as_json },
           :created
         )
       else
-        render_error(
-          'コメントの投稿に失敗しました',
-          comment.errors,
-          :unprocessable_entity
-        )
+        return render_error('コメントの投稿に失敗しました', comment.errors, :unprocessable_entity)
       end
     end
-
-  rescue ActiveRecord::Rollback
-    render_error(
-      'コメントの投稿に失敗しました(タグ更新エラー)',
-      comment.errors,
-      :unprocessable_entity
-    )
   end
+
 
   def update
     ActiveRecord::Base.transaction do
@@ -87,12 +81,6 @@ class Api::CommentsController < ApplicationController
         )
       end
     end
-  rescue ActiveRecord::Rollback
-    render_error(
-      'コメントの更新に失敗しました(タグ更新エラー)',
-      @comment.errors,
-      :unprocessable_entity
-    )
   end
 
   def destroy

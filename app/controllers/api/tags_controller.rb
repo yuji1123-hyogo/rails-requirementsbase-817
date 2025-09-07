@@ -1,5 +1,6 @@
-class Api::TagController < ApplicationController
-  before_action :set_tag, only: [:show, :destroy]
+class Api::TagsController < ApplicationController
+  before_action :set_tags, only: [:show ]
+  before_action :authenticate_user
 
 
   def index
@@ -29,7 +30,7 @@ class Api::TagController < ApplicationController
 
   private
 
-  def set_tag
+  def set_tags
     @tag = Tag.find(params[:id])
   rescue ActiveRecord::RecordNotFound
     render_error('タグが見つかりません', {}, :not_found)
